@@ -1,0 +1,13 @@
+# Create Event Bridge using Event Bus
+WeatherReportSQS:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: WEATHER_MESSAGE_QUEUE
+    RedrivePolicy:
+      deadLetterTargetArn: !GetAtt WeatherReportDLQ.Arn
+      maxReceiveCount: 1
+
+WeatherReportDLQ:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: WEATHER_MESSAGE_DLQ

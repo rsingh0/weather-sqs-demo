@@ -1,0 +1,36 @@
+service: weather-sqs-demo
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - sqs:SendMessage
+       - sqs:ReceiveMessage
+       - sqs:DeleteMessage
+       - sqs:GetQueueAttributes
+      Resource: !GetAtt WeatherReportSQS.Arn
+
+
+functions:
+  weatherenqueue:
+    handler: handler.weatherenqueue
+    events:
+      - http:
+          path: /forecast
+          method: get
+    environment:
+      WeatherEnqueueName: !GetAtt WeatherReportSQS.QueueUrl
+
+  weatherdequeue:
+    handler: handler.weatherdequeue
+    events:
+      - sqs:
+          arn: !GetAtt WeatherReportSQS.Arn
+          batchSize: 1
+
+resources:
+  Resources: ${file(resources.yml)}
